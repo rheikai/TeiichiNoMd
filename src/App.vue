@@ -2,7 +2,7 @@
 <main>
     <div id="editor">
         <h2>エディタ</h2>
-        <textarea @keyup="onMdEditorChanged($event.target.value)"></textarea>
+        <textarea v-model="md_in_edit"></textarea>
     </div>
     <div id="preview">
         <h2>プレビュー</h2>
@@ -14,16 +14,32 @@
 
 <script>
 import MarkdownIt from "markdown-it";
-const md = new MarkdownIt();
+const markdownit = new MarkdownIt();
 
 export default {
     data() {
         return {
+            md_in_edit: `
+＃　帝一のＭＤ
+Ｍａｒｋｄｏｗｎを書くときに、全角で記号・英語・数字を入力しても、それらを半角に自動置換してくれます。　　
+　　
+リストも書けます。
+ー　あいうえお
+ー　かきくけこ
+ー　さしすせそ
+　　
+表なんかもいけます。
+｜名前｜好きな食べ物｜
+｜ーー｜ーーーーーー｜
+｜一郎｜ハンバーグ｜
+｜二郎｜ラーメン｜
+｜三郎｜焼き魚｜
+`.trim(),
             preview: ""
         }
     },
-    methods: {
-        onMdEditorChanged(value) {
+    computed: {
+        preview() {
             const symbols = {
                 "ー": "-",
                 "＾": "^",
@@ -63,22 +79,23 @@ export default {
 
                 "　": " ",
             };
+            let md = this.md_in_edit;
             for (let [key, val] of Object.entries(symbols)) {
-                value = value.replaceAll(key, val);
+                md = md.replaceAll(key, val);
             }
 
             for (let i = "０".charCodeAt(0); i <= "９".charCodeAt(0); i++) {
-                value = value.replaceAll(String.fromCharCode(i), String.fromCharCode("0".charCodeAt(0) + i - "０".charCodeAt(0)));
+                md = md.replaceAll(String.fromCharCode(i), String.fromCharCode("0".charCodeAt(0) + i - "０".charCodeAt(0)));
             }
 
             for (let i = "ａ".charCodeAt(0); i <= "ｚ".charCodeAt(0); i++) {
-                value = value.replaceAll(String.fromCharCode(i), String.fromCharCode("a".charCodeAt(0) + i - "ａ".charCodeAt(0)));
+                md = md.replaceAll(String.fromCharCode(i), String.fromCharCode("a".charCodeAt(0) + i - "ａ".charCodeAt(0)));
             }
 
             for (let i = "Ａ".charCodeAt(0); i <= "Ｚ".charCodeAt(0); i++) {
-                value = value.replaceAll(String.fromCharCode(i), String.fromCharCode("A".charCodeAt(0) + i - "Ａ".charCodeAt(0)));
+                md = md.replaceAll(String.fromCharCode(i), String.fromCharCode("A".charCodeAt(0) + i - "Ａ".charCodeAt(0)));
             }
-            this.preview = md.render(value);
+            return markdownit.render(md);
         }
     }
 }
